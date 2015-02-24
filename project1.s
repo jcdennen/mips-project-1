@@ -4,7 +4,12 @@
 ## MergeSort and Merge functions implemented with MIPS Assembly
 ## For CIS 341 Project 1
 #################################################
-
+## Questions:
+## Should I be using add or addi in merge?
+## How do I use the Helper Array
+##
+##
+#################################################
 	.data
 Array:		.word	56,3,46,47,34,12,1,5,10,8,33,25,29,31,50,43
 Length:		.word	16
@@ -18,16 +23,18 @@ ArrayC:		.word	0:49		#why not 0:50?
 ## calls merge on ArrayM for Problem 1
 ## calls full merge_sort funciton on Array for Problem 2
 main:
-	addi $sp, $sp, -20			#make room for 5 registers
-	sw $ra, 16($sp)				#save $ra on stack
-	sw $s3, 12($sp) 			#save $s3 on stack
-	sw $s2, 8($sp) 				#save $s2 on stack
-	sw $s1, 4($sp) 				#save $s1 on stack
-	sw $s0, 0($sp) 				#save $s0 on stack
+	addi $sp, $sp, -4			#make room for 1 register
+	sw $ra, 0($sp)				#save $ra on stack
 
-	la $t0, Array 				#
-	la $t1, 0					#
-	la $t2, 15					#$t2 holds length of array -1
+	la $a0, ArrayM 				#loads ArrayM into an a register
+	li $a1, 0					#store low value in a0 : 0
+	li $a2, 9					#store high value in a2 : length of ArrayM -1
+	li $a3, 4 					#store mid value in a3 : 4
+	jal merge 					#jump and link to merge function
+
+    lw $ra, 0($sp)				#
+    add $sp, $sp, 4 		 	#restore stack	
+    jr $ra 						#
 
 ## merge_sort function
 merge_sort:
@@ -47,32 +54,44 @@ ms_block:
 
 ## merge function
 merge:
-#i = low
-#k = low
-#j = mid + 1
+	add $t0, $zero, $a1 		# i = low = $t0
+	add $t1, $zero, $a2 		# k = low= $t1
+	addi $t2, $a3, 1			# j = mid + 1 = $t2
+	#ArrayC
 	jal mlc_1_1					#jump to first logic check
 
-## merge logic check 1.1 : while (i<=mid && j<=high) 1st part
+## merge logic check 1.1 : while (i<=mid && j<=high) pt 1
 mlc_1_1:
-	sle $t_, i, mid				#use right registers (i<=mid) 
-	bne $t_, $zero, mlc_1_2 	#
-	jal	mlc_1_2						
+	sle $t4, $t0, $a3			# (i<=mid) 
+	bne $t4, $zero, mlc_1_2 	#if true, jump to while pt 2
+	jal	mlc_2					#if false, jump to second while loop
 
-## merge logic check 1.2 : while (i<=mid && j<=high) 2nd part
+## merge logic check 1.2 : while (i<=mid && j<=high) pt 2
 mlc_1_2:
+	sle $t4, $t2, $a2			# (j<=high)
+	bne $t4, $zero, mlc_1_3 	#if true, jump to if/else statement
+	jal mlc_1_2 				#if false, jump to second while loop
 
-## merge logic check 1.3 (if/else statement)
-mlc_1_2:
+## merge logic check 1.3 (if/else statement) : else
+mlc_1_3:
+	slt $t4, $t0($a0), $t2($a0) # a[i] < a[j]
+	bne $t4, $zero, mlc_1_4 	#if true, jump to if
+	move $t1(ArrayC), $t2($a0) 	# c[k] = a[j]
+	addi $t1, $t1, 1 			# k++
+	addi $t2, $t2, 1 			# j++
+	jal mlc_1_1 				#continue while loop
 
-## merge logic check 2
+## merge logic check 1.4 (if/else statement) : if
+mlc_1_4:
+	
+
+## merge logic check 2 2nd while loop
 mlc_2:
 
-## merge logic check 3
+## merge logic check 3 3rd while loop
 mlc_3:
 
 ## merge logic check 4 (for loop)
 mlc_4:
 
-exit_merge_sort:
-	jr $ra 				#return statement
 
